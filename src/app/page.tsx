@@ -6,22 +6,43 @@ export default function Home() {
       <header className="border-b border-white/5 backdrop-blur-xl bg-gray-950/80 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-orange-500/20">N+</div>
+            <div className="w-8 h-8 flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#sg)" stroke="none"/><path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><defs><linearGradient id="sg" x1="4" y1="2" x2="20" y2="22"><stop stopColor="#f97316"/><stop offset="1" stopColor="#e94560"/></linearGradient></defs></svg>
+            </div>
             <span className="text-xl font-semibold">N+Safety</span>
           </div>
           <a href="https://nplusstar.ai" className="text-gray-400 hover:text-white transition-colors text-sm">nplusstar.ai</a>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6">
+      {/* Background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-600/15 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "8s" }} />
+        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-red-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "10s", animationDelay: "3s" }} />
+      </div>
+
+      <main className="max-w-6xl mx-auto px-6 relative z-10">
         <div className="text-center py-24">
-          <h1 className="text-4xl sm:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-300 via-red-300 to-yellow-300 bg-clip-text text-transparent">
+          {/* Shield animation */}
+          <div className="mb-8 animate-[fadeInScale_1s_ease-out]">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" className="mx-auto drop-shadow-[0_0_30px_rgba(233,69,96,0.4)]">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#shieldGrad)" />
+              <path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-[drawCheck_0.5s_1.5s_ease-out_both]" />
+              <defs>
+                <linearGradient id="shieldGrad" x1="4" y1="2" x2="20" y2="22">
+                  <stop stopColor="#f97316" />
+                  <stop offset="1" stopColor="#e94560" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <h1 className="text-4xl sm:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-300 via-red-300 to-yellow-300 bg-clip-text text-transparent animate-[fadeUp_0.8s_0.3s_ease-out_both]">
             AI 工安助手
           </h1>
-          <p className="text-lg text-gray-400 max-w-xl mx-auto mb-10">
+          <p className="text-lg text-gray-400 max-w-xl mx-auto mb-10 animate-[fadeUp_0.8s_0.5s_ease-out_both]">
             以台灣職安法規為核心，拍照辨識工地安全隱患、智慧巡檢表、法規即時查詢。降低罰款風險，守護工人安全。
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-[fadeUp_0.8s_0.7s_ease-out_both]">
             <Link href="/inspect" className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-500 hover:to-red-400 rounded-xl text-lg font-semibold transition-all shadow-lg shadow-orange-600/25 hover:scale-105">
               拍照巡檢
             </Link>
