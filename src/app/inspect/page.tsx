@@ -88,7 +88,15 @@ export default function InspectPage() {
     : 0;
   const hasResults = photos.some((p) => p.result);
 
-  const downloadReport = () => {
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const downloadReport = async () => {
     const date = new Date().toLocaleDateString("zh-TW");
     const time = new Date().toLocaleTimeString("zh-TW");
 
@@ -125,15 +133,18 @@ h1{text-align:center;color:#e94560;margin-bottom:4px;}
 <div class="stat"><div class="num" style="color:#22c55e">${photos.filter(p=>p.result).length}</div><div class="label">已分析照片</div></div>
 </div>`;
 
-    photos.forEach((p, i) => {
-      if (!p.result) return;
+    for (let i = 0; i < photos.length; i++) {
+      const p = photos[i];
+      if (!p.result) continue;
+      const imgBase64 = await fileToBase64(p.file);
       html += `<div class="photo-block">
-<div style="background:#f1f5f9;padding:40px;text-align:center;color:#94a3b8;">現場照片 #${i + 1}</div>
+<img src="${imgBase64}" alt="現場照片 #${i + 1}" />
 <div class="photo-info">
 <p style="color:#475569;font-size:14px;">${p.result.scene_description}</p>
 <p style="margin:8px 0;"><strong>風險評分：${p.result.risk_score}/10</strong></p>`;
 
-      if (p.result.violations?.length > 0) {
+      const hasViolations = p.result.violations && p.result.violations.length;
+      if (hasViolations) {
         p.result.violations.forEach((v) => {
           html += `<div class="violation ${v.severity}">
 <div class="vt">${v.item}</div>
@@ -143,7 +154,7 @@ h1{text-align:center;color:#e94560;margin-bottom:4px;}
         });
       }
       html += `</div></div>`;
-    });
+    }
 
     html += `<div class="sign"><div class="sign-box"><div class="sign-label">巡檢人員</div><div style="border-bottom:1px solid #1a1a2e;margin-bottom:6px;"></div><div style="font-size:12px;color:#64748b;">姓名：__________ 日期：__________</div></div>
 <div class="sign-box"><div class="sign-label">工地主任</div><div style="border-bottom:1px solid #1a1a2e;margin-bottom:6px;"></div><div style="font-size:12px;color:#64748b;">姓名：__________ 日期：__________</div></div></div>

@@ -49,3 +49,8 @@ body {
   0% { opacity: 1; pointer-events: all; }
   100% { opacity: 0; pointer-events: none; visibility: hidden; }
 }
+
+@keyframes textToShield {
+  0% { transform: scale(1); }
+  100% { transform: scale(0.5); }
+}
