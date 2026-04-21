@@ -31,7 +31,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-24">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
           <Link href="/inspect" className="group bg-gradient-to-b from-white/5 to-transparent border border-white/10 rounded-2xl p-6 hover:border-orange-500/40 transition-all duration-300">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/15 to-transparent border border-white/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
               📸
@@ -52,6 +52,13 @@ export default function Home() {
             </div>
             <h3 className="text-lg font-semibold mb-2">法規查詢</h3>
             <p className="text-gray-400 text-sm">輸入情境或關鍵字，即時查詢職安法規條文，含罰則金額提示。</p>
+          </Link>
+          <Link href="/history" className="group bg-gradient-to-b from-white/5 to-transparent border border-white/10 rounded-2xl p-6 hover:border-orange-500/40 transition-all duration-300">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/15 to-transparent border border-white/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+              📊
+            </div>
+            <h3 className="text-lg font-semibold mb-2">巡檢紀錄</h3>
+            <p className="text-gray-400 text-sm">查看歷史巡檢報告、違規趨勢分析、改善追蹤。</p>
           </Link>
         </div>
 

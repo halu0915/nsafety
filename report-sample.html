@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工地安全巡檢報告</title>
+<style>
+@page { size: A4; margin: 20mm; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; color: #1a1a2e; line-height: 1.6; background: #fff; }
+
+.cover { page-break-after: always; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; padding: 60px 40px; }
+.cover-logo { width: 80px; height: 80px; background: linear-gradient(135deg, #e94560, #f97316); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 28px; margin-bottom: 40px; }
+.cover h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+.cover h2 { font-size: 20px; font-weight: 400; color: #94a3b8; margin-bottom: 60px; }
+.cover-info { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; max-width: 400px; }
+.cover-info dt { color: #94a3b8; font-size: 12px; }
+.cover-info dd { color: #fff; font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+.cover-footer { margin-top: 60px; color: #64748b; font-size: 12px; }
+
+.page { padding: 40px; max-width: 800px; margin: 0 auto; }
+h3 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 32px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e94560; }
+h4 { font-size: 16px; font-weight: 600; color: #334155; margin: 20px 0 10px; }
+
+.summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+.summary-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; }
+.summary-card .num { font-size: 28px; font-weight: 800; }
+.summary-card .label { font-size: 11px; color: #64748b; margin-top: 4px; }
+.risk-high .num { color: #ef4444; }
+.risk-medium .num { color: #f59e0b; }
+.risk-low .num { color: #22c55e; }
+.risk-score .num { color: #e94560; }
+
+.photo-block { border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; margin: 20px 0; }
+.photo-img { width: 100%; max-height: 300px; object-fit: cover; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; min-height: 200px; }
+.photo-analysis { padding: 20px; }
+.photo-scene { font-size: 14px; color: #475569; margin-bottom: 12px; }
+.photo-risk { display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+.photo-risk.high { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+.photo-risk.medium { background: #fffbeb; color: #f59e0b; border: 1px solid #fde68a; }
+.photo-risk.low { background: #f0fdf4; color: #22c55e; border: 1px solid #bbf7d0; }
+
+.violation { background: #fafafa; border-left: 3px solid #ef4444; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 8px 0; }
+.violation.medium { border-left-color: #f59e0b; }
+.violation.low { border-left-color: #22c55e; }
+.violation-title { font-size: 14px; font-weight: 600; color: #1e293b; }
+.violation-reg { font-size: 12px; color: #3b82f6; margin: 4px 0; }
+.violation-penalty { font-size: 12px; color: #ef4444; }
+.violation-fix { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+.action-list { margin: 16px 0; }
+.action-item { display: flex; gap: 10px; padding: 10px 14px; border-radius: 8px; margin: 6px 0; font-size: 13px; }
+.action-item.urgent { background: #fef2f2; color: #991b1b; }
+.action-item.warning { background: #fffbeb; color: #92400e; }
+.action-item.info { background: #f0fdf4; color: #166534; }
+.action-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.action-item.urgent .action-dot { background: #ef4444; }
+.action-item.warning .action-dot { background: #f59e0b; }
+.action-item.info .action-dot { background: #22c55e; }
+
+.reg-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+.reg-table th { background: #f8fafc; text-align: left; padding: 10px 12px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569; }
+.reg-table td { padding: 10px 12px; border: 1px solid #e2e8f0; }
+
+.sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin: 40px 0; }
+.sign-box { border-top: 1px solid #cbd5e1; padding-top: 12px; }
+.sign-label { font-size: 12px; color: #94a3b8; margin-bottom: 40px; }
+.sign-line { border-bottom: 1px solid #1a1a2e; margin-bottom: 6px; }
+.sign-name { font-size: 12px; color: #64748b; }
+
+.footer { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; }
+</style>
+</head>
+<body>
+
+<!-- 封面 -->
+<div class="cover">
+  <div class="cover-logo">N+</div>
+  <h1>工地安全巡檢報告</h1>
+  <h2>Construction Site Safety Inspection Report</h2>
+  <dl class="cover-info">
+    <dt>報告編號</dt><dd>NSF-2026-0421-001</dd>
+    <dt>巡檢日期</dt><dd>2026 年 4 月 21 日</dd>
+    <dt>專案名稱</dt><dd>瑞芳區明燈路機電工程</dd>
+    <dt>巡檢人員</dt><dd>吳政儒</dd>
+    <dt>工地地點</dt><dd>新北市瑞芳區明燈路三段</dd>
+    <dt>天氣狀況</dt><dd>晴，28°C</dd>
+  </dl>
+  <div class="cover-footer">N+Safety by N+Star International Co., Ltd. | safety.nplusstar.ai</div>
+</div>
+
+<!-- 巡檢概要 -->
+<div class="page">
+  <h3>1. 巡檢概要</h3>
+  <div class="summary-cards">
+    <div class="summary-card risk-score"><div class="num">6</div><div class="label">風險評分 /10</div></div>
+    <div class="summary-card risk-high"><div class="num">2</div><div class="label">高風險違規</div></div>
+    <div class="summary-card risk-medium"><div class="num">3</div><div class="label">中風險違規</div></div>
+    <div class="summary-card risk-low"><div class="num">1</div><div class="label">低風險違規</div></div>
+  </div>
+
+  <!-- 現場照片與分析 -->
+  <h3>2. 現場照片與分析</h3>
+
+  <div class="photo-block">
+    <div class="photo-img" style="background:#e2e8f0;padding:60px;text-align:center;">
+      <div>
+        <div style="font-size:48px;margin-bottom:10px;">📸</div>
+        <div>現場照片 #1</div>
+        <div style="font-size:12px;color:#94a3b8;">（實際使用時此處為巡檢照片）</div>
+      </div>
+    </div>
+    <div class="photo-analysis">
+      <div class="photo-scene">此照片拍攝工地二樓機電配管作業區，可見配電箱、管路施工及高架作業平台。</div>
+      <span class="photo-risk high">高風險</span>
+
+      <h4>發現違規 (3 項)</h4>
+
+      <div class="violation">
+        <div class="violation-title">1. 高架作業平台未設護欄</div>
+        <div class="violation-reg">違反：營造安全衛生設施標準 第 19 條</div>
+        <div class="violation-penalty">罰鍰：NT$ 30,000 ~ 300,000</div>
+        <div class="violation-fix">改善建議：立即加裝高度 90cm 以上之上欄杆、中間欄杆及腳趾板</div>
+      </div>
+
+      <div class="violation medium">
+        <div class="violation-title">2. 配電箱門未關閉上鎖</div>
+        <div class="violation-reg">違反：職業安全衛生設施規則 第 243 條</div>
+        <div class="violation-penalty">罰鍰：NT$ 30,000 ~ 300,000</div>
+        <div class="violation-fix">改善建議：配電箱應保持關閉並上鎖，標示「危險 - 高壓電」</div>
+      </div>
+
+      <div class="violation low">
+        <div class="violation-title">3. 危險區域未設警告標示</div>
+        <div class="violation-reg">違反：職業安全衛生設施規則 第 21 條</div>
+        <div class="violation-penalty">罰鍰：NT$ 30,000 ~ 150,000</div>
+        <div class="violation-fix">改善建議：於施工區域周邊設置明顯警告標示及安全圍籬</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="photo-block">
+    <div class="photo-img" style="background:#e2e8f0;padding:60px;text-align:center;">
+      <div>
+        <div style="font-size:48px;margin-bottom:10px;">📸</div>
+        <div>現場照片 #2</div>
+      </div>
+    </div>
+    <div class="photo-analysis">
+      <div class="photo-scene">一樓材料堆置區，可見鷹架組件、管材及電線。</div>
+      <span class="photo-risk medium">中風險</span>
+
+      <h4>發現違規 (2 項)</h4>
+
+      <div class="violation medium">
+        <div class="violation-title">1. 材料堆放阻擋逃生通道</div>
+        <div class="violation-reg">違反：職業安全衛生設施規則 第 32 條</div>
+        <div class="violation-penalty">罰鍰：NT$ 30,000 ~ 150,000</div>
+        <div class="violation-fix">改善建議：重新整理材料堆放位置，保持逃生通道淨寬 1.2m 以上</div>
+      </div>
+
+      <div class="violation medium">
+        <div class="violation-title">2. 電線未整理散落地面</div>
+        <div class="violation-reg">違反：職業安全衛生設施規則 第 246 條</div>
+        <div class="violation-penalty">罰鍰：NT$ 30,000 ~ 300,000</div>
+        <div class="violation-fix">改善建議：電線應架高或以護管保護，避免人員絆倒或碾壓破損</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 違規統計 -->
+  <h3>3. 違規統計</h3>
+  <table class="reg-table">
+    <thead>
+      <tr><th>類別</th><th>高風險</th><th>中風險</th><th>低風險</th><th>小計</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>墜落防護</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+      <tr><td>電氣安全</td><td>1</td><td>1</td><td>0</td><td>2</td></tr>
+      <tr><td>通道安全</td><td>0</td><td>1</td><td>0</td><td>1</td></tr>
+      <tr><td>標示警告</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+      <tr style="font-weight:700;background:#f8fafc;"><td>合計</td><td>2</td><td>3</td><td>1</td><td>6</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 改善建議 -->
+  <h3>4. 改善建議</h3>
+
+  <h4>立即處理</h4>
+  <div class="action-list">
+    <div class="action-item urgent"><div class="action-dot"></div>高架作業平台加裝護欄（營造標準§19）</div>
+    <div class="action-item urgent"><div class="action-dot"></div>配電箱關閉上鎖並張貼警告（職安設施規則§243）</div>
+  </div>
+
+  <h4>限期改善（3 日內）</h4>
+  <div class="action-list">
+    <div class="action-item warning"><div class="action-dot"></div>清理逃生通道材料堆放（職安設施規則§32）</div>
+    <div class="action-item warning"><div class="action-dot"></div>整理地面散落電線（職安設施規則§246）</div>
+    <div class="action-item warning"><div class="action-dot"></div>電線加裝護管或架高處理</div>
+  </div>
+
+  <h4>建議加強</h4>
+  <div class="action-list">
+    <div class="action-item info"><div class="action-dot"></div>施工區域設置完整警告標示（職安設施規則§21）</div>
+  </div>
+
+  <!-- 法規引用 -->
+  <h3>5. 引用法規</h3>
+  <table class="reg-table">
+    <thead>
+      <tr><th>法規</th><th>條次</th><th>摘要</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>營造安全衛生設施標準</td><td>第 19 條</td><td>高度 2 公尺以上工作場所應設護欄</td></tr>
+      <tr><td>職業安全衛生設施規則</td><td>第 243 條</td><td>電氣設備應有防護措施</td></tr>
+      <tr><td>職業安全衛生設施規則</td><td>第 246 條</td><td>電線應妥善配置避免損壞</td></tr>
+      <tr><td>職業安全衛生設施規則</td><td>第 32 條</td><td>安全通道應保持暢通</td></tr>
+      <tr><td>職業安全衛生設施規則</td><td>第 21 條</td><td>危險區域應設置警告標示</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 簽核 -->
+  <h3>6. 簽核</h3>
+  <div class="sign-grid">
+    <div class="sign-box">
+      <div class="sign-label">巡檢人員</div>
+      <div class="sign-line"></div>
+      <div class="sign-name">姓名：________________　日期：____/____/____</div>
+    </div>
+    <div class="sign-box">
+      <div class="sign-label">工地主任</div>
+      <div class="sign-line"></div>
+      <div class="sign-name">姓名：________________　日期：____/____/____</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    本報告由 N+Safety AI 工安助手自動產出，法規引用以全國法規資料庫為準。<br>
+    恩加斯達國際有限公司 | safety.nplusstar.ai | 報告產出時間：2026-04-21 10:50
+  </div>
+</div>
+
+</body>
+</html>
