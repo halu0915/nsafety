@@ -30,9 +30,22 @@ export async function POST(request: Request) {
     });
   }
 
-  // Search knowledge base — use more results for follow-up questions
+  // Search knowledge base
   const isFollowUp = FOLLOWUP_PATTERNS.test(question);
-  const kbResults = await searchRegulations(question, isFollowUp ? 10 : 5);
+
+  // For follow-up questions, enrich search query with context from history
+  let searchQuery = question;
+  if (isFollowUp && history && history.length > 0) {
+    // Extract law names from recent conversation
+    const recentText = history.slice(-4).map((m) => m.content).join(" ");
+    const lawNames = recentText.match(/職業安全衛生法|營造安全衛生設施標準|職業安全衛生設施規則|勞動檢查法|高架作業勞工保護措施標準|缺氧症預防規則|消防設備設置標準/g);
+    if (lawNames && lawNames.length > 0) {
+      const lastLaw = lawNames[lawNames.length - 1];
+      searchQuery = `${lastLaw} ${question}`;
+    }
+  }
+
+  const kbResults = await searchRegulations(searchQuery, isFollowUp ? 10 : 5);
   const context = kbResults
     .filter((r) => r.score > 0.35)
     .map((r) => `【${r.filePath} ${r.sectionTitle}】\n${r.content}`)
