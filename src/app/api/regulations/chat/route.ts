@@ -14,7 +14,12 @@ const SAFETY_KEYWORDS = [
   "可以嗎", "規定", "要求", "怎麼", "需要", "合規", "違法", "處罰",
 ];
 
+// Follow-up patterns (user asking for more detail about a regulation)
+const FOLLOWUP_PATTERNS = /第\s*\d+|全文|看一下|條文|詳細|展開|原文|內容|哪一條|什麼意思/;
+
 function isRelevantQuery(query: string): boolean {
+  // Always allow follow-up questions about regulations
+  if (FOLLOWUP_PATTERNS.test(query)) return true;
   return SAFETY_KEYWORDS.some((kw) => query.includes(kw));
 }
 
@@ -34,8 +39,9 @@ export async function POST(request: Request) {
     });
   }
 
-  // Search knowledge base
-  const kbResults = await searchRegulations(question, 5);
+  // Search knowledge base — use more results for follow-up questions
+  const isFollowUp = FOLLOWUP_PATTERNS.test(question);
+  const kbResults = await searchRegulations(question, isFollowUp ? 10 : 5);
   const context = kbResults
     .filter((r) => r.score > 0.35)
     .map((r) => `【${r.filePath} ${r.sectionTitle}】\n${r.content}`)
@@ -46,11 +52,13 @@ export async function POST(request: Request) {
 規則：
 1. 只根據提供的法規資料回答，不要編造法條
 2. 用口語化的方式回答，不要只丟法條
-3. 先回答問題的結論，再引用具體法條佐證
+3. 先回答問題的結論，再引用具體法條摘要佐證
 4. 如果法規資料不足以回答，誠實說明並建議查詢方向
 5. 適當提醒罰則金額
 6. 回答要實用，站在工地現場人員的角度
 7. 不回答與工安無關的問題
+8. 如果用戶要求看某條的「全文」「原文」「詳細內容」，直接從提供的法規資料中找到該條完整內容並展示
+9. 法規資料中有完整條文時，不要說「無法提供」或「建議去法規資料庫查」— 直接引用提供的資料
 
 法規資料：
 ${context || "（未找到相關法規，請根據一般職安知識回答，並提醒用戶此回答僅供參考）"}`;
