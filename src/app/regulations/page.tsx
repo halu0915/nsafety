@@ -15,15 +15,22 @@ export default function RegulationsPage() {
   const [results, setResults] = useState<RegResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [message, setMessage] = useState("");
 
   const search = async () => {
     if (!query.trim()) return;
     setLoading(true);
     setSearched(true);
+    setMessage("");
     try {
       const resp = await fetch(`/api/regulations?q=${encodeURIComponent(query)}&limit=8`);
       const data = await resp.json();
       setResults(data.results || []);
+      if (data.redirect) {
+        setMessage(data.message);
+      } else if (data.suggestion) {
+        setMessage(data.suggestion);
+      }
     } catch {
       setResults([]);
     } finally {
@@ -85,7 +92,13 @@ export default function RegulationsPage() {
 
         {loading && <div className="text-center text-gray-500 py-12">搜尋中...</div>}
 
-        {searched && !loading && results.length === 0 && (
+        {message && (
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-5 mb-6 text-center">
+            <p className="text-orange-300 text-sm">{message}</p>
+          </div>
+        )}
+
+        {searched && !loading && results.length === 0 && !message && (
           <div className="text-center text-gray-500 py-12">未找到相關法規</div>
         )}
 
