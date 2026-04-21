@@ -39,3 +39,13 @@ body {
   0% { stroke-dasharray: 20; stroke-dashoffset: 20; }
   100% { stroke-dasharray: 20; stroke-dashoffset: 0; }
 }
+
+@keyframes shrinkLetter {
+  0% { max-width: 1em; opacity: 1; }
+  100% { max-width: 0; opacity: 0; overflow: hidden; }
+}
+
+@keyframes introFade {
+  0% { opacity: 1; pointer-events: all; }
+  100% { opacity: 0; pointer-events: none; visibility: hidden; }
+}

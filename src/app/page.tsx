@@ -1,8 +1,42 @@
 import Link from "next/link";
 
+function BrandIntro() {
+  return (
+    <div className="fixed inset-0 z-[100] bg-gray-950 flex items-center justify-center animate-[introFade_0.5s_3s_ease-in_forwards]">
+      <div className="text-center">
+        {/* Shield */}
+        <div className="mb-6 animate-[fadeInScale_0.8s_ease-out]">
+          <svg width="100" height="100" viewBox="0 0 24 24" fill="none" className="mx-auto drop-shadow-[0_0_40px_rgba(233,69,96,0.5)]">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#introShield)" />
+            <defs>
+              <linearGradient id="introShield" x1="4" y1="2" x2="20" y2="22">
+                <stop stopColor="#f97316" />
+                <stop offset="1" stopColor="#e94560" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        {/* N+Safety text → shrinks to N+S */}
+        <div className="flex items-center justify-center gap-0 text-5xl font-bold">
+          <span className="text-green-400 animate-[fadeUp_0.5s_0.3s_ease-out_both]">N</span>
+          <span className="text-green-400 animate-[fadeUp_0.5s_0.4s_ease-out_both]">+</span>
+          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent animate-[fadeUp_0.5s_0.5s_ease-out_both]">S</span>
+          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent animate-[fadeUp_0.5s_0.6s_ease-out_both] animate-[shrinkLetter_0.5s_2s_ease-in_forwards]" style={{ animation: "fadeUp 0.5s 0.6s ease-out both, shrinkLetter 0.5s 2s ease-in forwards" }}>a</span>
+          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent" style={{ animation: "fadeUp 0.5s 0.7s ease-out both, shrinkLetter 0.5s 2.1s ease-in forwards" }}>f</span>
+          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent" style={{ animation: "fadeUp 0.5s 0.8s ease-out both, shrinkLetter 0.5s 2.2s ease-in forwards" }}>e</span>
+          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent" style={{ animation: "fadeUp 0.5s 0.9s ease-out both, shrinkLetter 0.5s 2.3s ease-in forwards" }}>t</span>
+          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent" style={{ animation: "fadeUp 0.5s 1.0s ease-out both, shrinkLetter 0.5s 2.4s ease-in forwards" }}>y</span>
+        </div>
+        <div className="text-gray-500 text-sm mt-4 animate-[fadeUp_0.5s_1.2s_ease-out_both]">AI 工安巡檢助手</div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <BrandIntro />
       <header className="border-b border-white/5 backdrop-blur-xl bg-gray-950/80 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
