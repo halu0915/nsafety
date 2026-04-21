@@ -112,10 +112,18 @@ ${violationContext}
     // Enrich with KB search for mentioned regulations
     if (result.violations) {
       for (const v of result.violations) {
-        if (v.regulation) {
-          const kbResults = await searchRegulations(v.regulation, 1);
+        const searchQuery = v.item || v.regulation || "";
+        if (searchQuery) {
+          const kbResults = await searchRegulations(searchQuery, 2);
           if (kbResults.length > 0) {
-            v.regulation_detail = kbResults[0].content.slice(0, 300);
+            v.regulation_detail = kbResults[0].content.slice(0, 500);
+            v.regulation_source = kbResults[0].filePath;
+            v.regulation_section = kbResults[0].sectionTitle;
+            v.kb_score = kbResults[0].score;
+            // Use KB regulation if available and score is good
+            if (kbResults[0].score > 0.5 && kbResults[0].sectionTitle) {
+              v.verified_regulation = `${kbResults[0].filePath.replace('.md','')} ${kbResults[0].sectionTitle}`;
+            }
           }
         }
       }

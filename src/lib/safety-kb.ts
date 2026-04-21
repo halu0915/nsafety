@@ -1,7 +1,7 @@
 // ── N+Safety Knowledge Base Integration ──
 // Connects to Qdrant vector search for regulation queries
 
-const QDRANT_URL = process.env.QDRANT_URL || "http://localhost:6333";
+const SEARCH_API = process.env.SAFETY_SEARCH_API || "https://safety-search-api-production.up.railway.app";
 
 export interface RegulationResult {
   content: string;
@@ -15,23 +15,17 @@ export async function searchRegulations(
   limit: number = 5
 ): Promise<RegulationResult[]> {
   try {
-    const url = `${QDRANT_URL}/search?q=${encodeURIComponent(query)}&limit=${limit}`;
+    const url = `${SEARCH_API}/search?q=${encodeURIComponent(query)}&limit=${limit}`;
     const resp = await fetch(url);
     if (!resp.ok) return [];
 
     const data = await resp.json();
-    return (data.results || [])
-      .filter((r: { relative_path: string }) =>
-        r.relative_path.includes("職安法規") ||
-        r.relative_path.includes("法律知識") ||
-        r.relative_path.includes("消防")
-      )
-      .map((r: { content: string; file_path: string; section_title: string; score: number; relative_path: string }) => ({
-        content: r.content,
-        filePath: r.relative_path,
-        sectionTitle: r.section_title,
-        score: r.score,
-      }));
+    return (data.results || []).map((r: { content: string; file: string; section: string; score: number }) => ({
+      content: r.content,
+      filePath: r.file,
+      sectionTitle: r.section,
+      score: r.score,
+    }));
   } catch {
     return [];
   }
