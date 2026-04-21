@@ -26,6 +26,7 @@ export default function InspectPage() {
   const [result, setResult] = useState<InspectionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => {
@@ -86,23 +87,43 @@ export default function InspectPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Upload Area */}
-        <div
-          className="border-2 border-dashed border-white/20 rounded-2xl p-8 text-center mb-8 cursor-pointer hover:border-orange-500/50 transition-colors"
-          onClick={() => fileRef.current?.click()}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
-        >
-          <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-          {image ? (
-            <img src={image} alt="uploaded" className="max-h-80 mx-auto rounded-xl" />
-          ) : (
-            <div>
-              <div className="text-4xl mb-4">📸</div>
-              <p className="text-gray-400">點擊拍照或上傳工地照片</p>
-              <p className="text-gray-600 text-sm mt-2">支援 JPG、PNG，建議清晰拍攝工地全景</p>
+        {image ? (
+          <div className="border-2 border-white/10 rounded-2xl p-4 mb-6 text-center">
+            <img src={image} alt="uploaded" className="max-h-80 mx-auto rounded-xl mb-4" />
+            <button
+              onClick={() => { setImage(null); setFile(null); setResult(null); }}
+              className="text-sm text-gray-500 hover:text-white transition-colors"
+            >
+              重新選擇
+            </button>
+          </div>
+        ) : (
+          <div
+            className="border-2 border-dashed border-white/20 rounded-2xl p-8 text-center mb-6 hover:border-orange-500/50 transition-colors"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+          >
+            <div className="text-4xl mb-4">📸</div>
+            <p className="text-gray-400 mb-6">拍攝或上傳工地照片進行安全分析</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => cameraRef.current?.click()}
+                className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-500 rounded-xl text-sm font-semibold hover:from-orange-500 hover:to-red-400 transition-all"
+              >
+                拍照
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="px-6 py-3 border border-white/20 rounded-xl text-sm font-semibold hover:bg-white/5 transition-all"
+              >
+                選擇檔案
+              </button>
             </div>
-          )}
-        </div>
+            <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+            <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+            <p className="text-gray-600 text-xs mt-4">支援 JPG、PNG、PDF</p>
+          </div>
+        )}
 
         {image && (
           <button
