@@ -32,7 +32,10 @@ export default function RegulationsPage() {
       const resp = await fetch("/api/regulations/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({
+          question,
+          history: messages.map((m) => ({ role: m.role, content: m.content })),
+        }),
       });
       const data = await resp.json();
       setMessages((prev) => [

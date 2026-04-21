@@ -15,7 +15,7 @@ const SAFETY_KEYWORDS = [
 ];
 
 // Follow-up patterns (user asking for more detail about a regulation)
-const FOLLOWUP_PATTERNS = /第\s*\d+|全文|看一下|條文|詳細|展開|原文|內容|哪一條|什麼意思/;
+const FOLLOWUP_PATTERNS = /第\s*[\d一二三四五六七八九十百零]+|全文|看一下|看看|條文|詳細|展開|原文|內容|哪一條|什麼意思|上面|剛才|這個|那個|繼續|更多|補充/;
 
 function isRelevantQuery(query: string): boolean {
   // Always allow follow-up questions about regulations
@@ -25,7 +25,10 @@ function isRelevantQuery(query: string): boolean {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { question } = body;
+  const { question, history } = body as {
+    question: string;
+    history?: { role: "user" | "assistant"; content: string }[];
+  };
 
   if (!question) {
     return Response.json({ error: "請輸入問題" }, { status: 400 });
@@ -64,6 +67,18 @@ export async function POST(request: Request) {
 ${context || "（未找到相關法規，請根據一般職安知識回答，並提醒用戶此回答僅供參考）"}`;
 
   try {
+    // Build messages with history for context
+    const chatMessages: { role: string; content: string }[] = [
+      { role: "system", content: systemPrompt },
+    ];
+    if (history && history.length > 0) {
+      const recent = history.slice(-6);
+      for (const msg of recent) {
+        chatMessages.push({ role: msg.role, content: msg.content });
+      }
+    }
+    chatMessages.push({ role: "user", content: question });
+
     const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -72,10 +87,7 @@ ${context || "（未找到相關法規，請根據一般職安知識回答，並
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: question },
-        ],
+        messages: chatMessages,
         max_tokens: 1000,
       }),
     });
