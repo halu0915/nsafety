@@ -2,6 +2,7 @@
 // User asks a question → search KB → LLM answers using real regulations
 
 import { searchRegulations } from "@/lib/safety-kb";
+import { gate } from "@/lib/api-guard";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 
@@ -12,6 +13,10 @@ const FOLLOWUP_PATTERNS = /第\s*[\d一二三四五六七八九十百零]+|全�
 const INJECTION_PATTERNS = /忽略指令|忽略上面|ignore.*instruction|system prompt|列出.*提示|扮演|角色扮演|DAN|jailbreak/i;
 
 export async function POST(request: Request) {
+  // P1: auth + rate limit（防陌生人燒 OpenRouter 帳單）
+  const blocked = gate(request);
+  if (blocked) return blocked;
+
   const body = await request.json();
   const { question, history } = body as {
     question: string;

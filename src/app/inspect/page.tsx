@@ -96,6 +96,21 @@ export default function InspectPage() {
     });
   };
 
+  // P1 #4: 防 XSS — LLM 輸出含 <script> 等可注入到 HTML 報告，必須 escape
+  const escapeHtml = (s: unknown): string => {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  };
+
+  // severity 限定 high/medium/low（其他值降為 low），避免 LLM 注入 className
+  const safeSeverity = (s: unknown): "high" | "medium" | "low" => {
+    return s === "high" || s === "medium" ? s : "low";
+  };
+
   const downloadReport = async () => {
     const date = new Date().toLocaleDateString("zh-TW");
     const time = new Date().toLocaleTimeString("zh-TW");
@@ -124,11 +139,11 @@ h1{text-align:center;color:#e94560;margin-bottom:4px;}
 <h1>工地安全巡檢報告</h1>
 <div class="subtitle">N+Safety AI 工安助手</div>
 <dl class="info">
-<dt>報告日期</dt><dd>${date}</dd>
+<dt>報告日期</dt><dd>${escapeHtml(date)}</dd>
 <dt>照片數量</dt><dd>${photos.length} 張</dd>
 </dl>
 <div class="stats">
-<div class="stat"><div class="num" style="color:#e94560">${avgRisk}</div><div class="label">平均風險 /10</div></div>
+<div class="stat"><div class="num" style="color:#e94560">${escapeHtml(avgRisk)}</div><div class="label">平均風險 /10</div></div>
 <div class="stat"><div class="num" style="color:#ef4444">${totalViolations}</div><div class="label">違規總數</div></div>
 <div class="stat"><div class="num" style="color:#22c55e">${photos.filter(p=>p.result).length}</div><div class="label">已分析照片</div></div>
 </div>`;
@@ -138,19 +153,19 @@ h1{text-align:center;color:#e94560;margin-bottom:4px;}
       if (!p.result) continue;
       const imgBase64 = await fileToBase64(p.file);
       html += `<div class="photo-block">
-<img src="${imgBase64}" alt="現場照片 #${i + 1}" />
+<img src="${escapeHtml(imgBase64)}" alt="現場照片 #${i + 1}" />
 <div class="photo-info">
-<p style="color:#475569;font-size:14px;">${p.result.scene_description}</p>
-<p style="margin:8px 0;"><strong>風險評分：${p.result.risk_score}/10</strong></p>`;
+<p style="color:#475569;font-size:14px;">${escapeHtml(p.result.scene_description)}</p>
+<p style="margin:8px 0;"><strong>風險評分：${Number(p.result.risk_score) || 0}/10</strong></p>`;
 
       const hasViolations = p.result.violations && p.result.violations.length;
       if (hasViolations) {
         p.result.violations.forEach((v) => {
-          html += `<div class="violation ${v.severity}">
-<div class="vt">${v.item}</div>
-<div class="vr">${v.verified_regulation || v.regulation}</div>
-<div class="vp">罰鍰：${v.penalty}</div>
-<div class="vf">改善：${v.suggestion}</div></div>`;
+          html += `<div class="violation ${safeSeverity(v.severity)}">
+<div class="vt">${escapeHtml(v.item)}</div>
+<div class="vr">${escapeHtml(v.verified_regulation || v.regulation)}</div>
+<div class="vp">罰鍰：${escapeHtml(v.penalty)}</div>
+<div class="vf">改善：${escapeHtml(v.suggestion)}</div></div>`;
         });
       }
       html += `</div></div>`;
