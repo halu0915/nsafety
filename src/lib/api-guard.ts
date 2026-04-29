@@ -6,26 +6,49 @@
 // ── Auth ───────────────────────────────────────────────────────────
 
 /**
- * 驗證 API key header。沒設 NSAFETY_API_KEY 時 fail-closed（拒絕請求）。
- * 用：const failed = requireAuth(req); if (failed) return failed;
+ * 驗證請求來源：以下任一條件通過即 authorize：
+ *  (1) Origin/Referer 在 ALLOWED_ORIGINS 內 → 自家網站的瀏覽器 fetch
+ *  (2) x-api-key header 匹配 NSAFETY_API_KEY → 直接 API 使用者（curl / 合作夥伴）
+ *
+ * 兩個都不符 → 401。
+ *
+ * 設定方式（Vercel env）：
+ *  - NSAFETY_API_KEY (任一存在即可開啟其中一個 mode；fallback 16+ 字元)
+ *  - NSAFETY_ALLOWED_ORIGINS (逗號分隔，預設 "https://safety.nplusstar.ai")
  */
-export function requireAuth(req: Request): Response | null {
+function getAllowedOrigins(): string[] {
+  const env = process.env.NSAFETY_ALLOWED_ORIGINS;
+  if (env) return env.split(",").map((s) => s.trim()).filter(Boolean);
+  // 預設只放正式 production domain；本機 dev 走 same-origin 測試請另設 env
+  return ["https://safety.nplusstar.ai"];
+}
+
+function originAllowed(req: Request): boolean {
+  const allowed = getAllowedOrigins();
+  const origin = req.headers.get("origin");
+  if (origin && allowed.includes(origin)) return true;
+  // 回退到 referer（部分 same-origin POST 不帶 origin）
+  const referer = req.headers.get("referer");
+  if (referer) {
+    try {
+      const u = new URL(referer);
+      if (allowed.includes(`${u.protocol}//${u.host}`)) return true;
+    } catch {}
+  }
+  return false;
+}
+
+function apiKeyValid(req: Request): boolean {
   const expected = process.env.NSAFETY_API_KEY;
-  if (!expected || expected.length < 16) {
-    console.error("[api-guard] NSAFETY_API_KEY env missing or too short — refusing all requests");
-    return Response.json(
-      { error: "API not configured" },
-      { status: 503 }
-    );
-  }
+  if (!expected || expected.length < 16) return false;
   const provided = req.headers.get("x-api-key");
-  if (!provided || provided !== expected) {
-    return Response.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-  return null;
+  return provided === expected;
+}
+
+export function requireAuth(req: Request): Response | null {
+  if (originAllowed(req)) return null;
+  if (apiKeyValid(req)) return null;
+  return Response.json({ error: "Unauthorized" }, { status: 401 });
 }
 
 // ── Rate Limit (in-memory, best-effort) ────────────────────────────
