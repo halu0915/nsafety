@@ -2,12 +2,17 @@
 // Upload a construction site photo, AI identifies safety violations
 
 import { searchRegulations, COMMON_VIOLATIONS } from "@/lib/safety-kb";
+import { gate, validateImageFile, validateImageUrl } from "@/lib/api-guard";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
+  // P0: auth + rate limit（防陌生人燒 OpenRouter 帳單）
+  const blocked = gate(request);
+  if (blocked) return blocked;
+
   const formData = await request.formData();
   const image = formData.get("image") as File | null;
   const imageUrl = formData.get("imageUrl") as string | null;
@@ -20,6 +25,10 @@ export async function POST(request: Request) {
   let imageContent: { type: "image_url"; image_url: { url: string } };
 
   if (image) {
+    // P0: 驗證 MIME + size 防巨檔 / 非圖檔
+    const fileError = validateImageFile(image);
+    if (fileError) return fileError;
+
     const bytes = await image.arrayBuffer();
     const base64 = Buffer.from(bytes).toString("base64");
     const mimeType = image.type || "image/jpeg";
@@ -28,6 +37,10 @@ export async function POST(request: Request) {
       image_url: { url: `data:${mimeType};base64,${base64}` },
     };
   } else {
+    // P0: SSRF 防護 — 拒絕 internal IP / file:// / localhost
+    const urlError = validateImageUrl(imageUrl!);
+    if (urlError) return urlError;
+
     imageContent = {
       type: "image_url",
       image_url: { url: imageUrl! },
