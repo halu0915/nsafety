@@ -1,3 +1,4 @@
+import { NPlus } from "@/components/nplus";
 import Link from "next/link";
 
 function BrandIntro() {
@@ -45,7 +46,7 @@ export default function Home() {
             <div className="w-8 h-8 flex items-center justify-center">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="url(#sg)" stroke="none"/><path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><defs><linearGradient id="sg" x1="4" y1="2" x2="20" y2="22"><stop stopColor="#f97316"/><stop offset="1" stopColor="#e94560"/></linearGradient></defs></svg>
             </div>
-            <span className="text-xl font-semibold">N+Safety</span>
+            <span className="text-xl font-semibold">N<NPlus />Safety</span>
           </div>
           <a href="https://nplusstar.ai" className="text-gray-400 hover:text-white transition-colors text-sm">nplusstar.ai</a>
         </div>
