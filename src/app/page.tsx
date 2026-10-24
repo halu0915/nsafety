@@ -1,5 +1,8 @@
 import { NPlus } from "@/components/nplus";
 import Link from "next/link";
+import { pageMetadata, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/seo";
+
+export const metadata = pageMetadata("/", SITE_TITLE, SITE_DESCRIPTION);
 
 function BrandIntro() {
   return (
