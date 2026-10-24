@@ -7,9 +7,9 @@ N+Safety 由 N+Star 恩加斯達國際（N+Star International Co., Ltd.）提供
 ## 主要功能
 
 - [拍照巡檢](https://safety.nplusstar.ai/inspect)：上傳工地照片，AI 自動辨識安全隱患，引用具體法條，評估風險等級。
-- [智慧巡檢表](https://safety.nplusstar.ai/checklist)：依工程類型自動生成檢查表，逐項勾選拍照，產出合規巡檢報告。
+- [智慧巡檢表](https://safety.nplusstar.ai/checklist)：依工程類型帶出巡檢檢查表，逐項勾選結果並加註，匯出巡檢報告。
 - [工安法規問答](https://safety.nplusstar.ai/regulations)：輸入情境或關鍵字，即時查詢職安法規條文，含罰則金額提示。回答根據台灣職安法規知識庫，僅供參考。
-- [巡檢紀錄](https://safety.nplusstar.ai/history)：查看歷史巡檢報告、違規趨勢分析、改善追蹤。
+- [巡檢紀錄](https://safety.nplusstar.ai/history)：查看歷史巡檢紀錄：巡檢時間、照片與違規數量、風險分數與摘要。
 
 ## 涵蓋法規
 
