@@ -25,8 +25,14 @@ export default function ChecklistPage() {
   const [projectName, setProjectName] = useState("");
   const [inspector, setInspector] = useState("");
 
-  useEffect(() => {
+  // 切換工程類型時才進入載入狀態（初始值已是 true），避免在 effect 內同步 setState
+  const selectType = (next: "mep" | "construction") => {
+    if (next === type) return;
     setLoading(true);
+    setType(next);
+  };
+
+  useEffect(() => {
     fetch(`/api/checklist?type=${type}`)
       .then((r) => r.json())
       .then((data) => {
@@ -116,8 +122,8 @@ export default function ChecklistPage() {
           <input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder="專案名稱" className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
           <input value={inspector} onChange={(e) => setInspector(e.target.value)} placeholder="巡檢人員" className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500" />
           <div className="flex gap-2">
-            <button onClick={() => setType("mep")} className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === "mep" ? "bg-orange-600 text-white" : "bg-white/5 text-gray-400"}`}>機電工程</button>
-            <button onClick={() => setType("construction")} className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === "construction" ? "bg-orange-600 text-white" : "bg-white/5 text-gray-400"}`}>一般營造</button>
+            <button onClick={() => selectType("mep")} className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === "mep" ? "bg-orange-600 text-white" : "bg-white/5 text-gray-400"}`}>機電工程</button>
+            <button onClick={() => selectType("construction")} className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${type === "construction" ? "bg-orange-600 text-white" : "bg-white/5 text-gray-400"}`}>一般營造</button>
           </div>
         </div>
 
