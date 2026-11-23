@@ -13,6 +13,23 @@ export interface RegulationResult {
   score: number;
 }
 
+// Returns null unless the body is {results: [...]} with every item carrying
+// content/file/section strings and a finite score. [] is a valid empty result.
+function parseSearchResults(data: unknown): RegulationResult[] | null {
+  if (!data || typeof data !== "object") return null;
+  const results = (data as { results?: unknown }).results;
+  if (!Array.isArray(results)) return null;
+  const out: RegulationResult[] = [];
+  for (const r of results) {
+    if (!r || typeof r !== "object") return null;
+    const { content, file, section, score } = r as Record<string, unknown>;
+    if (typeof content !== "string" || typeof file !== "string" || typeof section !== "string") return null;
+    if (typeof score !== "number" || !Number.isFinite(score)) return null;
+    out.push({ content, filePath: file, sectionTitle: section, score });
+  }
+  return out;
+}
+
 // ok=false means the search service could not be reached (host off, tunnel
 // down, timeout, non-2xx) — distinct from "reachable but nothing found".
 export async function searchRegulationsChecked(
@@ -27,13 +44,14 @@ export async function searchRegulationsChecked(
       return { ok: false, results: [] };
     }
 
-    const data = await resp.json();
-    const results = (data.results || []).map((r: { content: string; file: string; section: string; score: number }) => ({
-      content: r.content,
-      filePath: r.file,
-      sectionTitle: r.section,
-      score: r.score,
-    }));
+    const data: unknown = await resp.json();
+    const results = parseSearchResults(data);
+    if (!results) {
+      // 200 but an error envelope or missing fields: treat as unavailable so
+      // callers never build an answer on top of a broken response
+      console.warn("safety-search unavailable: malformed response");
+      return { ok: false, results: [] };
+    }
     return { ok: true, results };
   } catch (err) {
     console.warn("safety-search unavailable:", err);
