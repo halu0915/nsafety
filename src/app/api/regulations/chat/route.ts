@@ -1,7 +1,7 @@
 // ── Regulation Chat API ──
 // User asks a question → search KB → LLM answers using real regulations
 
-import { searchRegulations } from "@/lib/safety-kb";
+import { searchRegulationsChecked, SEARCH_UNAVAILABLE_MESSAGE } from "@/lib/safety-kb";
 import { gate } from "@/lib/api-guard";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
@@ -50,7 +50,12 @@ export async function POST(request: Request) {
     }
   }
 
-  const kbResults = await searchRegulations(searchQuery, isFollowUp ? 10 : 5);
+  const search = await searchRegulationsChecked(searchQuery, isFollowUp ? 10 : 5);
+  if (!search.ok) {
+    // Do not let the LLM answer without the regulation database (ungrounded + costs money)
+    return Response.json({ answer: `${SEARCH_UNAVAILABLE_MESSAGE}。`, sources: [], unavailable: true });
+  }
+  const kbResults = search.results;
   const context = kbResults
     .filter((r) => r.score > 0.35)
     .map((r) => `【${r.filePath} ${r.sectionTitle}】\n${r.content}`)

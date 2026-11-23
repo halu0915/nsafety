@@ -1,7 +1,10 @@
 // ── N+Safety Knowledge Base Integration ──
-// Connects to Qdrant vector search for regulation queries
+// Connects to the regulation vector search service (self-hosted on nplus-box
+// behind a Cloudflare Tunnel). Override with SAFETY_SEARCH_API.
 
-const SEARCH_API = process.env.SAFETY_SEARCH_API || "https://safety-search-api-production.up.railway.app";
+const SEARCH_API = process.env.SAFETY_SEARCH_API || "https://safety-search.nplusstar.ai";
+const SEARCH_TIMEOUT_MS = 8_000;
+export const SEARCH_UNAVAILABLE_MESSAGE = "法規查詢服務暫停，請稍後再試";
 
 export interface RegulationResult {
   content: string;
@@ -10,25 +13,39 @@ export interface RegulationResult {
   score: number;
 }
 
-export async function searchRegulations(
+// ok=false means the search service could not be reached (host off, tunnel
+// down, timeout, non-2xx) — distinct from "reachable but nothing found".
+export async function searchRegulationsChecked(
   query: string,
   limit: number = 5
-): Promise<RegulationResult[]> {
+): Promise<{ ok: boolean; results: RegulationResult[] }> {
   try {
     const url = `${SEARCH_API}/search?q=${encodeURIComponent(query)}&limit=${limit}`;
-    const resp = await fetch(url);
-    if (!resp.ok) return [];
+    const resp = await fetch(url, { signal: AbortSignal.timeout(SEARCH_TIMEOUT_MS) });
+    if (!resp.ok) {
+      console.warn("safety-search unavailable: HTTP", resp.status);
+      return { ok: false, results: [] };
+    }
 
     const data = await resp.json();
-    return (data.results || []).map((r: { content: string; file: string; section: string; score: number }) => ({
+    const results = (data.results || []).map((r: { content: string; file: string; section: string; score: number }) => ({
       content: r.content,
       filePath: r.file,
       sectionTitle: r.section,
       score: r.score,
     }));
-  } catch {
-    return [];
+    return { ok: true, results };
+  } catch (err) {
+    console.warn("safety-search unavailable:", err);
+    return { ok: false, results: [] };
   }
+}
+
+export async function searchRegulations(
+  query: string,
+  limit: number = 5
+): Promise<RegulationResult[]> {
+  return (await searchRegulationsChecked(query, limit)).results;
 }
 
 // Common violation database
