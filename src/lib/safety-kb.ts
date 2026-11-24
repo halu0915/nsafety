@@ -1,7 +1,10 @@
 // ── N+Safety Knowledge Base Integration ──
-// Connects to Qdrant vector search for regulation queries
+// Connects to the regulation vector search service (self-hosted on nplus-box
+// behind a Cloudflare Tunnel). Override with SAFETY_SEARCH_API.
 
-const SEARCH_API = process.env.SAFETY_SEARCH_API || "https://safety-search-api-production.up.railway.app";
+const SEARCH_API = process.env.SAFETY_SEARCH_API || "https://safety-search.nplusstar.ai";
+const SEARCH_TIMEOUT_MS = 8_000;
+export const SEARCH_UNAVAILABLE_MESSAGE = "法規查詢服務暫停，請稍後再試";
 
 export interface RegulationResult {
   content: string;
@@ -10,25 +13,57 @@ export interface RegulationResult {
   score: number;
 }
 
+// Returns null unless the body is {results: [...]} with every item carrying
+// content/file/section strings and a finite score. [] is a valid empty result.
+function parseSearchResults(data: unknown): RegulationResult[] | null {
+  if (!data || typeof data !== "object") return null;
+  const results = (data as { results?: unknown }).results;
+  if (!Array.isArray(results)) return null;
+  const out: RegulationResult[] = [];
+  for (const r of results) {
+    if (!r || typeof r !== "object") return null;
+    const { content, file, section, score } = r as Record<string, unknown>;
+    if (typeof content !== "string" || typeof file !== "string" || typeof section !== "string") return null;
+    if (typeof score !== "number" || !Number.isFinite(score)) return null;
+    out.push({ content, filePath: file, sectionTitle: section, score });
+  }
+  return out;
+}
+
+// ok=false means the search service could not be reached (host off, tunnel
+// down, timeout, non-2xx) — distinct from "reachable but nothing found".
+export async function searchRegulationsChecked(
+  query: string,
+  limit: number = 5
+): Promise<{ ok: boolean; results: RegulationResult[] }> {
+  try {
+    const url = `${SEARCH_API}/search?q=${encodeURIComponent(query)}&limit=${limit}`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(SEARCH_TIMEOUT_MS) });
+    if (!resp.ok) {
+      console.warn("safety-search unavailable: HTTP", resp.status);
+      return { ok: false, results: [] };
+    }
+
+    const data: unknown = await resp.json();
+    const results = parseSearchResults(data);
+    if (!results) {
+      // 200 but an error envelope or missing fields: treat as unavailable so
+      // callers never build an answer on top of a broken response
+      console.warn("safety-search unavailable: malformed response");
+      return { ok: false, results: [] };
+    }
+    return { ok: true, results };
+  } catch (err) {
+    console.warn("safety-search unavailable:", err);
+    return { ok: false, results: [] };
+  }
+}
+
 export async function searchRegulations(
   query: string,
   limit: number = 5
 ): Promise<RegulationResult[]> {
-  try {
-    const url = `${SEARCH_API}/search?q=${encodeURIComponent(query)}&limit=${limit}`;
-    const resp = await fetch(url);
-    if (!resp.ok) return [];
-
-    const data = await resp.json();
-    return (data.results || []).map((r: { content: string; file: string; section: string; score: number }) => ({
-      content: r.content,
-      filePath: r.file,
-      sectionTitle: r.section,
-      score: r.score,
-    }));
-  } catch {
-    return [];
-  }
+  return (await searchRegulationsChecked(query, limit)).results;
 }
 
 // Common violation database

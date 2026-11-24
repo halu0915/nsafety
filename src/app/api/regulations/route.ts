@@ -1,5 +1,5 @@
 // ── Regulation Search API (raw vector search) ──
-import { searchRegulations } from "@/lib/safety-kb";
+import { searchRegulationsChecked, SEARCH_UNAVAILABLE_MESSAGE } from "@/lib/safety-kb";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,7 +10,13 @@ export async function GET(request: Request) {
     return Response.json({ error: "請輸入搜尋關鍵字" }, { status: 400 });
   }
 
-  const results = await searchRegulations(q, limit);
+  const { ok, results } = await searchRegulationsChecked(q, limit);
+  if (!ok) {
+    return Response.json(
+      { query: q, count: 0, results: [], unavailable: true, error: SEARCH_UNAVAILABLE_MESSAGE },
+      { status: 503 }
+    );
+  }
 
   if (results.length > 0 && results[0].score < 0.4) {
     return Response.json({
